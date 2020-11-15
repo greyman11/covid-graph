@@ -8,7 +8,7 @@ const singleLocation = urlTimeRange.get('location');
 var totalTime = -timeRange;
 
 //Function to create the cart.
-function generateChart(
+function generateLineChart(
     dateRange,
     location) {
 
@@ -22,10 +22,10 @@ function generateChart(
                     fill: true,
                     data: location,
                     backgroundColor: [
-                        'grey'
+                        'rgb(1, 87, 155)'
                     ],
                     borderColor: [
-                        'black'
+                        'rgb(1, 87, 155)'
                     ],
                     borderWidth: 2
                 }
@@ -41,10 +41,10 @@ function generateChart(
                     fill: true,
                     data: location,
                     backgroundColor: [
-                        'grey'
+                        'rgb(1, 87, 155)'
                     ],
                     borderColor: [
-                        'black'
+                        'rgb(1, 87, 155)'
                     ],
                     borderWidth: 2
                 }
@@ -53,12 +53,12 @@ function generateChart(
     }
 
     var myChart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: chartData,
         options: {
             elements: {
                 line: {
-                   // tension: 1 // disables bezier curves
+                    // tension: 1 // disables bezier curves
                 }
             },
             responsive: true,
@@ -104,17 +104,17 @@ async function loadDatas() {
         var durhamCaseData = durhamData.data.map(function (item) {
             return item.newCasesBySpecimenDate;
         });
-        
+
 
         //timeslice the data to get only the data for the specified time range
         var durhamCaseData = durhamCaseData.reverse().slice(0).slice(totalTime);
 
         //put the gathered data into the chart
-        generateChart(dateRange, durhamCaseData);
+        generateLineChart(dateRange, durhamCaseData);
     }
     else {
         const singleUrl = 'https://api.coronavirus.data.gov.uk/v1/data?filters=areaType=ltla;areaName=' + singleLocation + '&structure=%7B%22date%22:%22date%22,%22newCasesBySpecimenDate%22:%22newCasesBySpecimenDate%22%7D';
-        $('#setLocation').text('- '+singleLocation);
+        $('#setLocation').text(singleLocation);
         let singleResponse = await fetch(singleUrl);
         let singleData = await singleResponse.json();
         var dateData = singleData.data.map(function (item) {
@@ -125,7 +125,7 @@ async function loadDatas() {
             return item.newCasesBySpecimenDate;
         });
         var singleCaseData = singleCaseData.reverse().slice(0).slice(totalTime);
-        generateChart(dateRange, singleCaseData);
+        generateLineChart(dateRange, singleCaseData);
     }
 }
 
@@ -166,16 +166,51 @@ async function generateLocationLists(url) {
     var areaList = totalCases.data.map(function (item) {
         return item.areaName;
     });
-    $.each( areaList, function( i, val ) {
+    $.each(areaList, function (i, val) {
         if (timeRange == null) {
-            $("#dropdown2").append('<li><a class="black-text" href="?location='+val+'">'+val+'</a></li>');
+            $("#dropdown2").append('<li><a class="black-text" href="?location=' + val + '">' + val + '</a></li>');
+            $("#ddLocations").append('<option value="' + val + '">');
         } else {
             //if a timerange is set, load the modified urls which include the timerange
-            $("#dropdown2").append('<li><a class="black-text" href="?location='+val+'&timeRange='+timeRange+'">'+val+'</a></li>'); }
-        console.log(val);
-    
-      });
+            $("#dropdown2").append('<li><a class="black-text" href="?location=' + val + '&timeRange=' + timeRange + '">' + val + '</a></li>');
+            $("#ddLocations").append('<option value="' + val + '">');
+        }
+
+    });
 }
+
+function loadFromSearch() {
+    var str = $("#icon_prefix").val();
+    if (str === "") {
+        return alert('no location selected');
+    }
+    if (timeRange == null) {
+        window.location = "?location=" + str;
+    } else {
+        window.location = "?location=" + str + "&timeRange=" + timeRange;
+    }
+}
+
+function clearLocation() {
+    if (timeRange == null) {
+        window.location = "?";
+    } else {
+        window.location = "?timeRange=" + timeRange;
+    }
+}
+
+$("#locationButton").click(function () {
+    loadFromSearch();
+});
+
+$("#clearLocationButton").click(function () {
+    clearLocation();
+});
+
+if (singleLocation !== null) {
+    $( "#clearLocationButton" ).toggle();
+}
+
 
 
 //fire off the functions
